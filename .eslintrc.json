@@ -1,0 +1,17 @@
+{
+	"parser": "@typescript-eslint/parser",
+	"plugins": ["@typescript-eslint"],
+	"extends": [
+	  "eslint-config-lludol",
+	  "plugin:@typescript-eslint/recommended"
+	],
+	"root": true,
+	"ignorePatterns": [
+	  "dist"
+	],
+	"rules": {
+	  "no-shadow": "off",
+	  "@typescript-eslint/no-shadow": ["error"],
+	  "import/prefer-default-export": "off"
+	}
+  }

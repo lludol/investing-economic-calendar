@@ -1,0 +1,12 @@
+export enum Country {
+	AUSTRALIA = 25,
+	CANADA = 6,
+	EURO_ZONE = 72,
+	FRANCE = 22,
+	GERMANY = 17,
+	JAPAN = 35,
+	NEW_ZEALAND = 43,
+	SWITZERLAND = 12,
+	UNITED_KINGDOM = 4,
+	UNITED_STATES = 5,
+}

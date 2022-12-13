@@ -1,0 +1,40 @@
+{
+  "name": "investing-economic-calendar",
+  "version": "0.0.1",
+  "repository": "git@github.com:lludol/investing-economic-calendar.git",
+  "bugs": {
+    "url": "https://github.com/lludol/investing-economic-calendar/issues"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "author": "lludol",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "lint": "eslint . --fix"
+  },
+  "keywords": [
+    "investing-economic-calendar",
+    "investing",
+    "investing.com",
+    "economic calendar"
+  ],
+  "devDependencies": {
+    "@types/crawler": "^1.2.2",
+    "@types/node": "^18.11.14",
+    "@types/qs": "^6.9.7",
+    "@typescript-eslint/eslint-plugin": "^5.46.1",
+    "@typescript-eslint/parser": "^5.46.1",
+    "eslint": "^8.29.0",
+    "eslint-config-lludol": "^0.2.1",
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "crawler": "^1.3.0",
+    "qs": "^6.11.0"
+  }
+}
