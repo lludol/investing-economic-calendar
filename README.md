@@ -29,6 +29,10 @@ const events = await fetchEconomicEvents({
 });
 ```
 
+## TODO
+- [ ] Find a way to fetch events with a specific range date
+- [ ] Complete models for Language, TimeZone and Country
+
 ## Contributing
 
 Don't hesitate to [create a pull request](https://github.com/lludol/investing-economic-calendar/pulls) to improve the project.
