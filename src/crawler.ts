@@ -47,6 +47,10 @@ function extractOneEventFromWidget($: cheerio.CheerioAPI, tr: cheerio.Element): 
 		previous: null,
 	};
 
+	if ($(tr).attr('id')) {
+		event.id = ($(tr).attr('id') || '').replace('eventRowId_', '');
+	}
+
 	$(tr).children('td').each((index, td) => {
 		if ($(td).hasClass('first left time')) {
 			event.time = $(td).text().trim();
