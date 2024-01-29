@@ -2,18 +2,22 @@ import Crawler from "crawler";
 import qs from "qs";
 import { CalendarType } from "./models/CalendarType";
 import { Country } from "./models/Country";
-import { Currency, EconomicEvent } from "./models/EconomicEvent";
+import { Currency, currencyToCountries } from "./models/Currency";
+import { EconomicEvent } from "./models/EconomicEvent";
 import { Importance } from "./models/Importance";
 import { Language } from "./models/Language";
 import { TimeZone } from "./models/TimeZone";
 
-export interface InvestingParams {
+interface InvestingParams {
 	importance: Importance[];
 	countries: Country[];
-	currencies: Currency[];
 	calType: CalendarType.DAILY | CalendarType.WEEKLY;
 	timeZone: TimeZone;
 	lang: Language;
+}
+
+export interface Params extends InvestingParams {
+	currencies: Currency[];
 }
 
 const newsCrawler = new Crawler({
@@ -111,36 +115,54 @@ function extractEventsFromWidget($: cheerio.CheerioAPI): EconomicEvent[] {
 	const events: EconomicEvent[] = [];
 	let lastTimestamp: string | null = null;
 
-	$('#ecEventsTable').children().last().children('tr').each((index, event) => {
-		if (!$(event).attr('class')) {
-			$(event).children('td').each((i, td) => {
-				if ($(td).attr('class')?.includes('theDay')) {
-					lastTimestamp = $(td).attr('id')?.replace('theDay', '') || null;
-				}
-			});
-		}
-
-		if ($(event).attr('id')?.includes('eventRowId')) {
-			if	(lastTimestamp) {
-				const extractedEvent = extractOneEventFromWidget($, event);
-				extractedEvent.timestampDay = Number.parseInt(lastTimestamp, 10);
-				events.push(extractedEvent);
+	$("#ecEventsTable")
+		.children()
+		.last()
+		.children("tr")
+		.each((index, event) => {
+			if (!$(event).attr("class")) {
+				$(event)
+					.children("td")
+					.each((i, td) => {
+						if ($(td).attr("class")?.includes("theDay")) {
+							lastTimestamp = $(td).attr("id")?.replace("theDay", "") || null;
+						}
+					});
 			}
-		}
-	});
+
+			if ($(event).attr("id")?.includes("eventRowId")) {
+				if (lastTimestamp) {
+					const extractedEvent = extractOneEventFromWidget($, event);
+					extractedEvent.timestampDay = Number.parseInt(lastTimestamp, 10);
+					events.push(extractedEvent);
+				}
+			}
+		});
 
 	return events;
 }
 
 /**
  * Extract events from the widget
- * @param {InvestingParams} params - Parameters to send to the widget
+ * @param {Params} params - Parameters to send to the widget
  * @returns {EconomicEvent[]} - Array with all events extracted
  */
-export function fetchEconomicEvents(params: InvestingParams): Promise<EconomicEvent[]> {
+export function fetchEconomicEvents(params: Params): Promise<EconomicEvent[]> {
+	const { currencies, ...investingParams } = params;
+
+	if (currencies && currencies.length > 0) {
+		const countries = [];
+
+		for (const currency of currencies) {
+			countries.push(currencyToCountries[currency]);
+		}
+
+		investingParams.countries = countries.flat();
+	}
+
 	return new Promise((resolve, reject) => {
 		newsCrawler.queue({
-			uri: generateUrl(params),
+			uri: generateUrl(investingParams),
 			callback: (err, res, doneCrawler) => {
 				if (err) {
 					reject(err);

@@ -12,12 +12,12 @@ npm install investing-economic-calendar # or yarn add investing-economic-calenda
 Return economic events of the period sent in parameters (weekly or daily).
 
 ```typescript
-// Example to fetch all important events of today (for majors currencies).
 import {
-	fetchEconomicEvents, CalendarType, Country, Language, Importance, TimeZone,
+	fetchEconomicEvents, CalendarType, Country, Currency, Language, Importance, TimeZone,
 } from 'investing-economic-calendar';
 
-const events = await fetchEconomicEvents({
+// Example to fetch all important events of today by Countries.
+const eventsDaily = await fetchEconomicEvents({
 	importance: [Importance.HIGH],
 	calType:    CalendarType.DAILY,
 	lang:       Language.ENGLISH,
@@ -26,6 +26,19 @@ const events = await fetchEconomicEvents({
 		Country.AUSTRALIA, Country.CANADA, Country.EURO_ZONE, Country.FRANCE,
 		Country.GERMANY, Country.JAPAN, Country.NEW_ZEALAND, Country.SWITZERLAND,
 		Country.UNITED_KINGDOM, Country.UNITED_STATES],
+});
+
+// Example to fetch all important events of the week by Currencies.
+const eventsWeekly = await fetchEconomicEvents({
+	importance: [Importance.HIGH],
+	calType:    CalendarType.DAILY,
+	lang:       Language.ENGLISH,
+	timeZone:   TimeZone.UTC,
+	currencies: [
+		Currency.AUD, Currency.CAD, Currency.CHF,
+		Currency.EUR, Currency.GBP, Currency.JPY,
+		Currency.NZD, Currency.USD,
+	],
 });
 ```
 
