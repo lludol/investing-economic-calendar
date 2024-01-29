@@ -1,6 +1,6 @@
-import { Importance } from './Importance';
+import { Importance } from "./Importance";
 
-export type Currency = 'AUD' | 'CAD' | 'CHF' | 'GBP' | 'EUR' | 'JPY' | 'USD' | 'NZD';
+export type Currency = "AUD" | "CAD" | "CHF" | "GBP" | "EUR" | "JPY" | "USD" | "NZD";
 
 export interface EconomicEvent {
 	id: string;
