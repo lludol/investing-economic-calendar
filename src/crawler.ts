@@ -109,37 +109,25 @@ function extractOneEventFromWidget($: cheerio.CheerioAPI, tr: cheerio.Element): 
  */
 function extractEventsFromWidget($: cheerio.CheerioAPI): EconomicEvent[] {
 	const events: EconomicEvent[] = [];
-	let day = 0;
+	let lastTimestamp: string | null = null;
 
-	$("#ecEventsTable")
-		.children()
-		.last()
-		.children("tr")
-		.each((index, event) => {
-			if (!$(event).attr("class")) {
-				$(event)
-					.children("td")
-					.each((i, td) => {
-						if ($(td).attr("class")?.includes("theDay")) {
-							++day;
-						}
-					});
+	$('#ecEventsTable').children().last().children('tr').each((index, event) => {
+		if (!$(event).attr('class')) {
+			$(event).children('td').each((i, td) => {
+				if ($(td).attr('class')?.includes('theDay')) {
+					lastTimestamp = $(td).attr('id')?.replace('theDay', '') || null;
+				}
+			});
+		}
+
+		if ($(event).attr('id')?.includes('eventRowId')) {
+			if	(lastTimestamp) {
+				const extractedEvent = extractOneEventFromWidget($, event);
+				extractedEvent.timestampDay = Number.parseInt(lastTimestamp, 10);
+				events.push(extractedEvent);
 			}
-		});
-
-	if (day > 1) {
-		return [];
-	}
-
-	$("#ecEventsTable")
-		.children()
-		.last()
-		.children("tr")
-		.each((index, event) => {
-			if ($(event).attr("id")?.includes("eventRowId")) {
-				events.push(extractOneEventFromWidget($, event));
-			}
-		});
+		}
+	});
 
 	return events;
 }

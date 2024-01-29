@@ -4,7 +4,10 @@ export type Currency = "AUD" | "CAD" | "CHF" | "GBP" | "EUR" | "JPY" | "USD" | "
 
 export interface EconomicEvent {
 	id: string;
+
+	timestampDay: number;
 	time: string;
+
 	country: string;
 	currency: Currency;
 	importance: Importance;
