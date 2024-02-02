@@ -73,13 +73,20 @@ function extractOneEventFromWidget($: cheerio.CheerioAPI, tr: cheerio.Element): 
 			}
 
 			if ($(td).hasClass("sentiment")) {
-				if ($(td).children().length === 3) {
+				let nbIcons = 0;
+				$(td).children().each((i, child) => {
+					if ($(child).attr('class')?.includes('grayFullBullishIcon')) {
+						nbIcons++;
+					}
+				});
+
+				if (nbIcons === 3) {
 					event.importance = Importance.HIGH;
 				}
-				if ($(td).children().length === 2) {
+				if (nbIcons === 2) {
 					event.importance = Importance.MEDIUM;
 				}
-				if ($(td).children().length === 1) {
+				if (nbIcons === 1) {
 					event.importance = Importance.LOW;
 				}
 			}
