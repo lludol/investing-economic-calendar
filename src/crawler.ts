@@ -10,14 +10,14 @@ import { TimeZone } from "./models/TimeZone";
 
 interface InvestingParams {
 	importance: Importance[];
-	countries: Country[];
+	countries?: Country[];
 	calType: CalendarType.DAILY | CalendarType.WEEKLY;
 	timeZone: TimeZone;
 	lang: Language;
 }
 
 export interface Params extends InvestingParams {
-	currencies: Currency[];
+	currencies?: Currency[];
 }
 
 const newsCrawler = new Crawler({
