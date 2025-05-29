@@ -1,12 +1,11 @@
-import Crawler from "crawler";
-import qs from "qs";
-import { CalendarType } from "./models/CalendarType";
-import { Country } from "./models/Country";
-import { Currency, currencyToCountries } from "./models/Currency";
-import { EconomicEvent } from "./models/EconomicEvent";
+import * as cheerio from "cheerio";
+import type { CalendarType } from "./models/CalendarType";
+import type { Country } from "./models/Country";
+import { type Currency, currencyToCountries } from "./models/Currency";
+import type { EconomicEvent } from "./models/EconomicEvent";
 import { Importance } from "./models/Importance";
-import { Language } from "./models/Language";
-import { TimeZone } from "./models/TimeZone";
+import type { Language } from "./models/Language";
+import type { TimeZone } from "./models/TimeZone";
 
 interface InvestingParams {
 	importance: Importance[];
@@ -20,12 +19,6 @@ export interface Params extends InvestingParams {
 	currencies?: Currency[];
 }
 
-const newsCrawler = new Crawler({
-	maxConnections: 1,
-	retries: 1,
-	retryTimeout: 1000,
-});
-
 const INVESTING_URL = "https://sslecal2.investing.com/";
 
 /**
@@ -34,18 +27,26 @@ const INVESTING_URL = "https://sslecal2.investing.com/";
  * @returns {string} - The url generated
  */
 function generateUrl(params: InvestingParams): string {
-	const query = qs.stringify(params, { arrayFormat: "comma" });
+	const url = new URL(INVESTING_URL);
 
-	return `${INVESTING_URL}?${query}`;
+	for (const [key, value] of Object.entries(params)) {
+		if (Array.isArray(value)) {
+			url.searchParams.set(key, value.join(","));
+		} else {
+			url.searchParams.set(key, String(value));
+		}
+	}
+
+	return url.toString();
 }
 
 /**
  * Extract one event from the widget
- * @param {cheerio.CheerioAPI} $ - Cheerio instance
+ * @param {cheerio.Root} $ - Cheerio instance
  * @param {cheerio.Element} tr - HTML tr element
  * @returns {EconomicEvent} - One event
  */
-function extractOneEventFromWidget($: cheerio.CheerioAPI, tr: cheerio.Element): EconomicEvent {
+function extractOneEventFromWidget($: cheerio.Root, tr: cheerio.Element): EconomicEvent {
 	const event: Partial<EconomicEvent> = {
 		actual: null,
 		forecast: null,
@@ -58,7 +59,7 @@ function extractOneEventFromWidget($: cheerio.CheerioAPI, tr: cheerio.Element): 
 
 	$(tr)
 		.children("td")
-		.each((index, td) => {
+		.each((_, td) => {
 			if ($(td).hasClass("first left time")) {
 				event.time = $(td).text().trim();
 			}
@@ -74,11 +75,13 @@ function extractOneEventFromWidget($: cheerio.CheerioAPI, tr: cheerio.Element): 
 
 			if ($(td).hasClass("sentiment")) {
 				let nbIcons = 0;
-				$(td).children().each((i, child) => {
-					if ($(child).attr('class')?.includes('grayFullBullishIcon')) {
-						nbIcons++;
-					}
-				});
+				$(td)
+					.children()
+					.each((i, child) => {
+						if ($(child).attr("class")?.includes("grayFullBullishIcon")) {
+							nbIcons++;
+						}
+					});
 
 				if (nbIcons === 3) {
 					event.importance = Importance.HIGH;
@@ -115,10 +118,36 @@ function extractOneEventFromWidget($: cheerio.CheerioAPI, tr: cheerio.Element): 
 
 /**
  * Extract events from the widget
- * @param {cheerio.CheerioAPI} $ - Cheerio instance
+ * @param {Params} params - Parameters to send to the widget
  * @returns {EconomicEvent[]} - Array with all events extracted
  */
-function extractEventsFromWidget($: cheerio.CheerioAPI): EconomicEvent[] {
+export async function fetchEconomicEvents(params: Params): Promise<EconomicEvent[]> {
+	const { currencies, ...investingParams } = params;
+
+	if (currencies && currencies.length > 0) {
+		const countries = [];
+
+		for (const currency of currencies) {
+			countries.push(currencyToCountries[currency]);
+		}
+
+		investingParams.countries = countries.flat();
+	}
+
+	const url = generateUrl(investingParams);
+	const response = await fetch(url, {
+		headers: {
+			Accept: "*/*",
+			Connection: "keep-alive",
+			"Accept-Encoding": "gzip, deflate, br",
+			"Content-Type": "text/html; charset=UTF-8",
+			Host: "sslecal2.investing.com",
+		},
+	});
+
+	const html = await response.text();
+	const $ = cheerio.load(html);
+
 	const events: EconomicEvent[] = [];
 	let lastTimestamp: string | null = null;
 
@@ -126,7 +155,7 @@ function extractEventsFromWidget($: cheerio.CheerioAPI): EconomicEvent[] {
 		.children()
 		.last()
 		.children("tr")
-		.each((index, event) => {
+		.each((_, event) => {
 			if (!$(event).attr("class")) {
 				$(event)
 					.children("td")
@@ -147,37 +176,4 @@ function extractEventsFromWidget($: cheerio.CheerioAPI): EconomicEvent[] {
 		});
 
 	return events;
-}
-
-/**
- * Extract events from the widget
- * @param {Params} params - Parameters to send to the widget
- * @returns {EconomicEvent[]} - Array with all events extracted
- */
-export function fetchEconomicEvents(params: Params): Promise<EconomicEvent[]> {
-	const { currencies, ...investingParams } = params;
-
-	if (currencies && currencies.length > 0) {
-		const countries = [];
-
-		for (const currency of currencies) {
-			countries.push(currencyToCountries[currency]);
-		}
-
-		investingParams.countries = countries.flat();
-	}
-
-	return new Promise((resolve, reject) => {
-		newsCrawler.queue({
-			uri: generateUrl(investingParams),
-			callback: (err, res, doneCrawler) => {
-				if (err) {
-					reject(err);
-				} else {
-					resolve(extractEventsFromWidget(res.$));
-				}
-				doneCrawler();
-			},
-		});
-	});
 }

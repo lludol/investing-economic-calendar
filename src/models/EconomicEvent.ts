@@ -1,5 +1,5 @@
-import { Currency } from "./Currency";
-import { Importance } from "./Importance";
+import type { Currency } from "./Currency";
+import type { Importance } from "./Importance";
 
 export interface EconomicEvent {
 	id: string;
