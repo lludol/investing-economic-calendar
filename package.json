@@ -31,7 +31,7 @@
     "lint": "bunx biome check --write src/*"
   },
   "types": "./dist/index.d.ts",
-  "private": true,
+  "private": false,
   "dependencies": {
     "cheerio": "^1.0.0"
   }
