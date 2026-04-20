@@ -1,6 +1,6 @@
 {
   "name": "investing-economic-calendar",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "author": "lludol",
   "repository": "git@github.com:lludol/investing-economic-calendar.git",
   "main": "./dist/index.js",
