@@ -8,8 +8,8 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@types/bun": "latest",
-    "@types/node": "^22.15.24",
-    "typescript": "^5.8.3"
+    "@types/node": "^22.19.17",
+    "typescript": "^5.9.3"
   },
   "bugs": {
     "url": "https://github.com/lludol/investing-economic-calendar/issues"
@@ -26,13 +26,14 @@
   "license": "MIT",
   "scripts": {
     "build": "bun run build:types && bun build src/*.ts --outdir dist --target node --splitting --format esm",
-    "build:types": "tsc src/*.ts --emitDeclarationOnly --declaration --outDir dist",
+    "build:types": "tsc src/*.ts --emitDeclarationOnly --declaration --outDir dist --skipLibCheck",
     "start": "node dist/index.js",
     "lint": "bunx biome check --write src/*"
   },
   "types": "./dist/index.d.ts",
   "private": false,
   "dependencies": {
-    "cheerio": "^1.0.0"
+    "cheerio": "^1.2.0",
+    "domhandler": "^6.0.1"
   }
 }

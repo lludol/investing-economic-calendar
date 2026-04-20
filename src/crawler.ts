@@ -1,52 +1,23 @@
 import * as cheerio from "cheerio";
-import type { CalendarType } from "./models/CalendarType";
-import type { Country } from "./models/Country";
+import type { CheerioAPI } from "cheerio";
+import type { AnyNode } from "domhandler";
+import { type ApiCalendarParams, buildApiParams } from "./models/ApiParams";
 import { type Currency, currencyToCountries } from "./models/Currency";
 import type { EconomicEvent } from "./models/EconomicEvent";
 import { Importance } from "./models/Importance";
-import type { Language } from "./models/Language";
-import type { TimeZone } from "./models/TimeZone";
 
-interface InvestingParams {
-	importance: Importance[];
-	countries?: Country[];
-	calType: CalendarType.DAILY | CalendarType.WEEKLY;
-	timeZone: TimeZone;
-	lang: Language;
-}
-
-export interface Params extends InvestingParams {
+export interface Params extends ApiCalendarParams {
 	currencies?: Currency[];
 }
 
 const INVESTING_URL = "https://sslecal2.investing.com/";
 
-/**
- * Generate the url for the Investing economic calendar widget.
- * @param {InvestingParams} params - Parameters to send to the widget
- * @returns {string} - The url generated
- */
-function generateUrl(params: InvestingParams): string {
-	const url = new URL(INVESTING_URL);
-
-	for (const [key, value] of Object.entries(params)) {
-		if (Array.isArray(value)) {
-			url.searchParams.set(key, value.join(","));
-		} else {
-			url.searchParams.set(key, String(value));
-		}
-	}
-
-	return url.toString();
+function generateUrl(params: ApiCalendarParams): string {
+	const query = buildApiParams(params);
+	return `${INVESTING_URL}?${query}`;
 }
 
-/**
- * Extract one event from the widget
- * @param {cheerio.Root} $ - Cheerio instance
- * @param {cheerio.Element} tr - HTML tr element
- * @returns {EconomicEvent} - One event
- */
-function extractOneEventFromWidget($: cheerio.Root, tr: cheerio.Element): EconomicEvent {
+function extractOneEventFromWidget($: CheerioAPI, tr: AnyNode): EconomicEvent {
 	const event: Partial<EconomicEvent> = {
 		actual: null,
 		forecast: null,
